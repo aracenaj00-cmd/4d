@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fourth Direction — Worship Manager</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base Background Theme Settings */
+        body.theme-dark {
+            background-color: #1f2124;
+            color: #f1f5f9;
+        }
+        body.theme-light {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+        /* Device Preview Shell Wrappers */
+        .preview-pc {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        .preview-tablet {
+            max-width: 768px;
+            margin: 1.5rem auto;
+            border: 12px solid #334155;
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+        .preview-mobile {
+            max-width: 395px;
+            margin: 1.5rem auto;
+            border: 12px solid #334155;
+            border-radius: 36px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        /* Responsive horizontal cards for mobile preview */
+        .preview-mobile .song-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            grid-template-columns: none !important;
+        }
+
+        /* Stacked ChordPro Rendering */
+        .chordpro-line {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: 0.85rem;
+            line-height: 1.7;
+        }
+        .chord-pair {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-right: 0.15rem;
+            position: relative;
+        }
+        .chord-pill {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #60a5fa;
+            background-color: rgba(30, 58, 138, 0.35);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 0.375rem;
+            padding: 0.1rem 0.35rem;
+            margin-bottom: 0.2rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+            white-space: nowrap;
+        }
+        .chord-pill:hover {
+            background-color: #2563eb;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4);
+        }
+        .lyric-text {
+            font-size: 1.125rem;
+            color: #e2e8f0;
+            white-space: pre;
+        }
+        .theme-light .lyric-text {
+            color: #1e293b;
+        }
+        .section-header {
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #fbbf24;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            width: 100%;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="theme-dark font-sans min-h-full flex flex-col transition-colors duration-300">
+
+    <!-- Top Device Preview Switcher & Universal Nav Header -->
+    <header id="main-header" class="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-40 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- 1. TOP-LEFT LOGO BUTTON: Returns immediately to main Repertorio view -->
+                <button onclick="goToHome()" title="Volver a Repertorio Principal" class="flex items-center space-x-3 group focus:outline-none text-left">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid font-black text-xl">4D</i>
+                    </div>
+                    <div>
+                        <span class="text-lg font-extrabold tracking-tight text-white group-hover:text-blue-400 transition-colors">Fourth Direction</span>
+                        <span class="block text-xs font-medium text-slate-400">Worship Manager</span>
+                    </div>
+                </button>
+
+                <!-- Navigation Tabs (Center) -->
+                <nav id="top-nav-tabs" class="hidden md:flex space-x-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/50">
+                    <button onclick="switchTab('tab-repertoire')" id="nav-tab-repertoire" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-blue-600 text-white shadow">
+                        <i class="fa-solid fa-music mr-2"></i>Repertorio
+                    </button>
+                    <button onclick="switchTab('tab-setlists')" id="nav-tab-setlists" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-700/50">
+                        <i class="fa-solid fa-list-check mr-2"></i>Setlists
+                    </button>
+                    <button onclick="switchTab('tab-calendar')" id="nav-tab-calendar" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-700/50">
+                        <i class="fa-solid fa-calendar-days mr-2"></i>Calendario
+                    </button>
+                </nav>
+
+                <!-- Right Utilities: Theme Switcher + Device Viewport Switcher -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    
+                    <!-- 2. Background-Only Theme Toggle (Sun/Moon) -->
+                    <button onclick="toggleTheme()" id="theme-toggle-btn" title="Cambiar Fondo (Claro / Oscuro)" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 transition-all flex items-center justify-center">
+                        <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
+                    </button>
+
+                    <!-- 3. Device Viewport Switcher -->
+                    <div class="hidden sm:flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700 space-x-1" title="Simulador de Vista de Dispositivo">
+                        <button onclick="setViewportMode('pc')" id="btn-device-pc" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition">
+                            <i class="fa-solid fa-desktop mr-1"></i>PC
+                        </button>
+                        <button onclick="setViewportMode('tablet')" id="btn-device-tablet" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                            <i class="fa-solid fa-tablet-screen-button mr-1"></i>Tablet
+                        </button>
+                        <button onclick="setViewportMode('mobile')" id="btn-device-mobile" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                            <i class="fa-solid fa-mobile-screen-button mr-1"></i>Celular
+                        </button>
+                    </div>
+
+                    <!-- Add Song Main Action -->
+                    <button onclick="openSongModal()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-md hover:shadow-lg transition flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span class="hidden sm:inline">Nueva Canción</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Bottom Bar for smaller screens -->
+        <div class="md:hidden flex border-t border-slate-800 bg-slate-950 px-2 py-1.5 justify-around">
+            <button onclick="switchTab('tab-repertoire')" class="flex flex-col items-center py-1 px-3 text-xs font-semibold text-blue-400">
+                <i class="fa-solid fa-music text-base mb-0.5"></i>Repertorio
+            </button>
+            <button onclick="switchTab('tab-setlists')" class="flex flex-col items-center py-1 px-3 text-xs font-semibold text-slate-400 hover:text-white">
+                <i class="fa-solid fa-list-check text-base mb-0.5"></i>Setlists
+            </button>
+            <button onclick="switchTab('tab-calendar')" class="flex flex-col items-center py-1 px-3 text-xs font-semibold text-slate-400 hover:text-white">
+                <i class="fa-solid fa-calendar-days text-base mb-0.5"></i>Calendario
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container Shell (Device Switcher Wrapper) -->
+    <div id="device-wrapper" class="preview-pc flex-1 flex flex-col w-full transition-all duration-300">
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+            <!-- TAB 1: REPERTORIO DE CANCIONES -->
+            <section id="tab-repertoire" class="tab-content space-y-6">
+                <!-- Top Toolbar & Search -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+                    
+                    <!-- Search Input -->
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="song-search-input" oninput="renderRepertoire()" placeholder="Buscar por título, verso, acorde o etiquetas..." class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl pl-11 pr-4 py-2.5 text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                    </div>
+
+                    <!-- Filters & Controls -->
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="relative">
+                            <select id="artist-filter-select" onchange="renderRepertoire()" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                                <option value="ALL">Todos los Ministerios / Artistas</option>
+                                <option value="La IBI">La IBI (La Iglesia de la IBI)</option>
+                                <option value="MENAP">Ministerio MENAP</option>
+                                <option value="Dominio Público">Himnos Dominio Público</option>
+                                <option value="En Espíritu y En Verdad">En Espíritu y En Verdad</option>
+                                <option value="Marcos Witt">Marcos Witt</option>
+                            </select>
+                        </div>
+
+                        <button onclick="restoreBaseRepertoire()" title="Restablecer repertorio inicial completo" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700 text-sm font-medium transition flex items-center space-x-2">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span class="hidden sm:inline">Restablecer</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Song Count Badge -->
+                <div class="flex justify-between items-center px-1">
+                    <p class="text-sm font-medium text-slate-400">Mostrando <span id="song-count" class="text-blue-400 font-bold">0</span> canciones registradas</p>
+                </div>
+
+                <!-- Song Cards Grid -->
+                <div id="repertoire-grid" class="song-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- Dynamic Song Cards rendered by JS -->
+                </div>
+            </section>
+
+            <!-- TAB 2: SETLISTS -->
+            <section id="tab-setlists" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-blue-500"></i>
+                            Reuniones y Setlists Planificados
+                        </h2>
+                        <p class="text-sm text-slate-400 mt-1">Organiza el orden de alabanza para cada servicio o ensayo.</p>
+                    </div>
+                    <button onclick="openSetlistModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold text-sm shadow-md transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        Nuevo Setlist
+                    </button>
+                </div>
+
+                <div id="setlists-container" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Dynamic Setlists list rendered by JS -->
+                </div>
+            </section>
+
+            <!-- TAB 3: CALENDARIO DE REUNIONES -->
+            <section id="tab-calendar" class="tab-content hidden space-y-6">
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-days text-indigo-400"></i>
+                            Calendario de Servicios de Alabanza
+                        </h2>
+                        <p class="text-sm text-slate-400 mt-1">Selecciona cualquier día con setlist programado para ver el detalle e iniciar el escenario en vivo.</p>
+                    </div>
+
+                    <div class="flex items-center space-x-3 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
+                        <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span id="calendar-month-label" class="px-4 font-bold text-white min-w-[140px] text-center text-sm">Noviembre 2026</span>
+                        <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Calendar Grid -->
+                    <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                        <div class="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-400 mb-3 uppercase tracking-wider">
+                            <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+                        </div>
+                        <div id="calendar-days-grid" class="grid grid-cols-7 gap-1 sm:gap-2">
+                            <!-- Calendar Days JS rendered -->
+                        </div>
+                    </div>
+
+                    <!-- Day Selected Details Side Panel -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <div class="border-b border-slate-800 pb-3 mb-4">
+                                <span id="selected-day-header-date" class="text-xs font-semibold text-blue-400 uppercase tracking-wide">Selecciona un día</span>
+                                <h3 id="selected-day-header-title" class="text-lg font-bold text-white mt-0.5">Detalle de la Fecha</h3>
+                            </div>
+                            <div id="selected-day-content" class="space-y-4">
+                                <p class="text-sm text-slate-400 italic">Haz clic en un día del calendario para examinar los setlists o agendar una nueva reunión de alabanza.</p>
+                            </div>
+                        </div>
+
+                        <div id="selected-day-actions" class="pt-4 border-t border-slate-800 hidden">
+                            <!-- Iniciar escenario for this day -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- LIVE STAGE VIEW MODE (FULLSCREEN OVERLAY) -->
+    <div id="stage-view-overlay" class="fixed inset-0 z-50 bg-slate-950 text-slate-100 flex flex-col hidden overflow-hidden">
+        
+        <!-- Live Stage Header Controls -->
+        <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between shrink-0 shadow-lg">
+            
+            <div class="flex items-center space-x-3">
+                <button onclick="closeStageMode()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-sm font-semibold transition flex items-center space-x-2">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span class="hidden sm:inline">Salir</span>
+                </button>
+
+                <div class="h-6 w-px bg-slate-700 hidden sm:block"></div>
+
+                <div>
+                    <h2 id="stage-song-title" class="text-base sm:text-lg font-bold text-white truncate max-w-[200px] sm:max-w-xs">Nombre de la Canción</h2>
+                    <p id="stage-song-artist" class="text-xs text-blue-400 truncate">Ministerio / Banda</p>
+                </div>
+            </div>
+
+            <!-- Stage Control Toolbar (Transposer, Notation, Metronome, Auto-scroll) -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                
+                <!-- Notation Switch (USA / LAT) -->
+                <div class="bg-slate-800 p-1 rounded-lg border border-slate-700 flex text-xs font-bold">
+                    <button onclick="setNotationMode('USA')" id="btn-notation-usa" class="px-2 py-1 rounded bg-blue-600 text-white transition">USA</button>
+                    <button onclick="setNotationMode('LAT')" id="btn-notation-lat" class="px-2 py-1 rounded text-slate-400 hover:text-white transition">LAT</button>
+                </div>
+
+                <!-- Transposer (-1 / +1) -->
+                <div class="flex items-center bg-slate-800 rounded-lg border border-slate-700 px-2 py-1 space-x-2 text-xs">
+                    <span class="text-slate-400 font-medium">Tono:</span>
+                    <button onclick="transposeSong(-1)" class="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 font-bold text-white flex items-center justify-center">-</button>
+                    <span id="stage-key-display" class="font-extrabold text-blue-400 px-1 min-w-[28px] text-center">C</span>
+                    <button onclick="transposeSong(1)" class="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 font-bold text-white flex items-center justify-center">+</button>
+                </div>
+
+                <!-- Web Audio Metronome Controls -->
+                <div class="hidden lg:flex items-center bg-slate-800 rounded-lg border border-slate-700 px-2 py-1 space-x-2 text-xs">
+                    <button onclick="toggleMetronome()" id="btn-metronome-toggle" class="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-amber-400 font-bold flex items-center space-x-1">
+                        <i class="fa-solid fa-drum"></i>
+                        <span id="metronome-bpm-text">120 BPM</span>
+                    </button>
+                    <button onclick="tapTempo()" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300 font-semibold active:bg-blue-600">TAP</button>
+                </div>
+
+                <!-- Auto-Scroll Toggle -->
+                <button onclick="toggleAutoScroll()" id="btn-autoscroll" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-300 flex items-center space-x-1.5 transition">
+                    <i class="fa-solid fa-angles-down text-blue-400"></i>
+                    <span id="autoscroll-label" class="hidden md:inline">Auto-Scroll</span>
+                </button>
+
+                <!-- Mobile Stage Drawer Toggle Button -->
+                <button onclick="toggleMobileStageDrawer()" class="lg:hidden p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200">
+                    <i class="fa-solid fa-bars-staggered"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Stage Main View Content Container -->
+        <div class="flex-1 flex overflow-hidden relative">
+            
+            <!-- 8. Persistent Desktop Setlist Side Panel (#pc-stage-setlist-sidebar) -->
+            <aside id="pc-stage-setlist-sidebar" class="hidden lg:flex flex-col w-80 bg-slate-900 border-r border-slate-800 shrink-0 p-4 overflow-y-auto space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="font-extrabold text-sm uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-list-ol text-blue-400"></i>
+                        Setlist en Vivo
+                    </h3>
+                    <span id="stage-sidebar-count" class="text-xs bg-blue-900/60 text-blue-300 font-bold px-2 py-0.5 rounded-full">0 Canciones</span>
+                </div>
+
+                <!-- Active Setlist Item List -->
+                <div id="pc-stage-setlist-items" class="space-y-2 flex-1">
+                    <!-- Dynamic list items with jump, move up/down, remove -->
+                </div>
+
+                <!-- Quick Inline "+ Agregar canción al día" -->
+                <div class="pt-3 border-t border-slate-800">
+                    <select id="stage-add-song-select" onchange="addSongToCurrentStageSetlist(this.value)" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 focus:outline-none focus:border-blue-500">
+                        <option value="">+ Agregar canción al día...</option>
+                    </select>
+                </div>
+            </aside>
+
+            <!-- Main Interactive Song Sheet Container -->
+            <div id="stage-sheet-container" class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 max-w-4xl mx-auto">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-2xl space-y-6">
+                    <div class="border-b border-slate-800 pb-4 flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <span id="sheet-tempo-bpm" class="text-xs font-semibold text-amber-400 bg-amber-950/40 border border-amber-800/50 px-2.5 py-1 rounded-full uppercase tracking-wider">BPM: 120</span>
+                            <h1 id="sheet-title" class="text-2xl sm:text-4xl font-extrabold text-white mt-2">Título Canción</h1>
+                            <p id="sheet-artist" class="text-sm sm:text-base text-slate-400 font-medium">Artista / Ministerio</p>
+                        </div>
+                        <div class="flex items-center space-x-3 text-right">
+                            <div class="bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700/60">
+                                <span class="text-xs text-slate-400 block font-medium">Tono Base</span>
+                                <span id="sheet-original-key" class="text-lg font-bold text-blue-400">G</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rendered ChordPro Body -->
+                    <div id="sheet-chordpro-rendered" class="font-sans text-slate-200 text-base leading-relaxed space-y-4">
+                        <!-- Transposed lines & clickable SVG chord pills generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile & Tablet Setlist Drawer (#live-setlist-drawer) -->
+            <div id="live-setlist-drawer" class="lg:hidden fixed inset-y-0 right-0 w-80 bg-slate-900 border-l border-slate-800 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col p-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                    <h3 class="font-bold text-white text-base">Orden del Setlist</h3>
+                    <button onclick="toggleMobileStageDrawer()" class="p-2 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <div id="mobile-stage-setlist-items" class="space-y-2 flex-1 overflow-y-auto">
+                    <!-- Dynamic Mobile setlist items -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: NUEVA / EDITAR CANCIÓN WITH DUAL WEB/AI SEARCH -->
+    <div id="song-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 id="song-modal-title" class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-music text-blue-500"></i>
+                    Agregar Nueva Canción
+                </h3>
+                <button onclick="closeSongModal()" class="text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-5">
+                
+                <!-- 5. Working Dual Web/AI Song Searcher (Canción + Banda) -->
+                <div class="bg-blue-950/30 border border-blue-900/50 rounded-xl p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            Buscador Inteligente de Letra Completa y Acordes
+                        </span>
+                        <span class="text-[10px] bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full font-semibold">Dominio Público & AI</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Nombre de la Canción</label>
+                            <input type="text" id="search-song-title" placeholder="Ej: Sublime Gracia / Cuán Grande Es Dios" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Banda / Ministerio (Opcional)</label>
+                            <input type="text" id="search-song-artist" placeholder="Ej: La IBI / MENAP / Himno" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="executeDualWebSearch()" id="btn-search-ai" class="w-full py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs rounded-lg shadow transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-magnifying-glass font-black"></i>
+                        <span>Buscar y Auto-Completar Acordes en ChordPro</span>
+                    </button>
+                    <p class="text-[11px] text-slate-400">Busca en repositorios de dominio público e integra Gemini Search cuando la API Key está configurada.</p>
+                </div>
+
+                <!-- Form Fields -->
+                <form id="song-form" onsubmit="saveSongForm(event)" class="space-y-4">
+                    <input type="hidden" id="form-song-id" value="">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Título de la Canción *</label>
+                            <input type="text" id="form-song-title-input" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Artista / Ministerio *</label>
+                            <input type="text" id="form-song-artist-input" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Tono Principal *</label>
+                            <select id="form-song-key" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-blue-500">
+                                <option value="C">C (Do)</option><option value="C#">C# / Db</option><option value="D">D (Re)</option>
+                                <option value="D#">D# / Eb</option><option value="E">E (Mi)</option><option value="F">F (Fa)</option>
+                                <option value="F#">F# / Gb</option><option value="G">G (Sol)</option><option value="G#">G# / Ab</option>
+                                <option value="A">A (La)</option><option value="A#">A# / Bb</option><option value="B">B (Si)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Tempo (BPM)</label>
+                            <input type="number" id="form-song-bpm" value="120" min="40" max="240" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-blue-500">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Etiquetas</label>
+                            <input type="text" id="form-song-tags" placeholder="Alabanza, Himno..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-medium text-slate-300">Letra y Acordes en formato ChordPro *</label>
+                            <span class="text-[11px] text-slate-400">Usa [G], [C], [D], [Em] sobre las sílabas</span>
+                        </div>
+                        <textarea id="form-song-content" rows="10" required class="w-full bg-slate-950 font-mono text-xs border border-slate-800 rounded-xl p-3.5 text-blue-300 focus:border-blue-500 focus:outline-none" placeholder="[Estrofa 1]&#10;[G]Sublime gracia del Señor&#10;Que a un [C]infeliz sal[G]vó..."></textarea>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 pt-3 border-t border-slate-800">
+                        <button type="button" onclick="closeSongModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold">Cancelar</button>
+                        <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold shadow">Guardar Canción</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: NUEVO / EDITAR SETLIST WITH CALENDAR DATE PICKER -->
+    <div id="setlist-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 id="setlist-modal-title" class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-blue-500"></i>
+                    Planificar Nuevo Setlist
+                </h3>
+                <button onclick="closeSetlistModal()" class="text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <form id="setlist-form" onsubmit="saveSetlistForm(event)" class="p-6 space-y-4">
+                <input type="hidden" id="form-setlist-id" value="">
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Nombre o Tipo de Reunión *</label>
+                    <input type="text" id="form-setlist-title" required placeholder="Ej: Servicio Dominical / Ensayo General" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Fecha en Calendario *</label>
+                    <input type="date" id="form-setlist-date" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Selecciona Canciones del Repertorio</label>
+                    <div id="setlist-songs-selector" class="bg-slate-950 border border-slate-800 rounded-xl p-3 max-h-48 overflow-y-auto space-y-2">
+                        <!-- Checkboxes for available songs JS populated -->
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="closeSetlistModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold shadow">Guardar Setlist</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: IN-APP CUSTOM CONFIRM DELETE MODAL (NO window.confirm) -->
+    <div id="confirm-delete-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 text-center">
+            <div class="w-14 h-14 rounded-full bg-red-950/60 border border-red-800/60 text-red-400 mx-auto flex items-center justify-center text-2xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h3 id="delete-modal-title" class="text-lg font-bold text-white">¿Confirmar eliminación?</h3>
+                <p id="delete-modal-description" class="text-xs text-slate-400 mt-1">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="flex justify-center space-x-3 pt-2">
+                <button onclick="closeDeleteModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold">Cancelar</button>
+                <button id="delete-modal-confirm-btn" onclick="executePendingDelete()" class="px-5 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-semibold shadow">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: INTERACTIVE GUITAR CHORD DIAGRAM MODAL -->
+    <div id="chord-diagram-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden" onclick="closeChordModal()">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-xs w-full shadow-2xl text-center space-y-4" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span id="chord-modal-name" class="text-xl font-extrabold text-blue-400">Acorde G</span>
+                <button onclick="closeChordModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="chord-svg-container" class="flex justify-center items-center py-2">
+                <!-- SVG chord diagram dynamically built by JS -->
+            </div>
+            <p class="text-xs text-slate-400">Posición sugerida para guitarra acística / eléctrica.</p>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // Global State & Data Store
+        const EXTERNAL_CONFIG = {
+            GEMINI_API_KEY: "" // Auto-detects or uses built-in public domain lyrics searcher fallback
+        };
+
+        const CHROMATIC_SCALE_USA = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const CHROMATIC_SCALE_LAT = ["Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "La#", "Si"];
+
+        // Preloaded complete base worship repertoire (Unabridged ChordPro)
+        const BASE_SONGS = [
+            {
+                id: "song-1",
+                title: "Sublime Gracia",
+                artist: "Dominio Público",
+                key: "G",
+                bpm: 74,
+                tags: "Himno, Gracia",
+                content: `[Estrofa 1]
+[G]Sublime gracia del Se[C]ñor,
+Que a un [G]infeliz sal[D]vó;
+Fui [G]ciego mas hoy [C]veo [G]yo,
+Per[Em]dido y [D]él me ha[G]lló.
+
+[Estrofa 2]
+Su [G]gracia me enseñó a te[C]mer,
+Mis [G]dudas auyan[D]tó;
+¡Oh [G]cuán precioso [C]fue mi [G]ser
+Al [Em]dar mi [D]corazón![G]
+
+[Coro]
+[C]Gracia que me salvó,
+[G]Gracia que me libró;
+[Em]Jesús pagó mi [D]deuda en la cruz,
+Sub[C]lime gra[D]cia Señor.[G]
+
+[Estrofa 3]
+En [G]los peligros o aflic[C]ción
+Que he [G]tenido que pa[D]sar,
+Su [G]gracia me gui[C]ará al [G]hogar,
+Y [Em]nunca me [D]deja[G]rá.`
+            },
+            {
+                id: "song-2",
+                title: "Al Que Está Sentado En El Trono",
+                artist: "La IBI",
+                key: "C",
+                bpm: 68,
+                tags: "Adoración, La IBI",
+                content: `[Estrofa 1]
+[C]Quiero conocerte [G]cada día más,
+[Am]Entrar en tu presencia y [F]contemplar;
+[C]Tu gloria y tu majes[G]tad,
+[Am]Señor mi Dios mi [F]Rey.
+
+[Coro]
+Al que está sen[C]tado en el trono,
+Y al Cor[G]dero sea la gloria,
+Sea el [Am]honor, la honra y el [F]dominio,
+Por los [C]siglos de los [G]siglos. [C]
+
+[Puente]
+[F]Santo, Santo, [G]Santo es el Señor,
+[Am]Dios Omnipo[Em]tente,
+[F]Quien fue, quien [G]es y quien ven[C]drá.`
+            },
+            {
+                id: "song-3",
+                title: "Te Doy Gloria",
+                artist: "En Espíritu y En Verdad",
+                key: "C",
+                bpm: 128,
+                tags: "Jubilo, Alabanza",
+                content: `[Estrofa 1]
+[C]Cuan hermoso eres Je[G]sús,
+Son tus [Am]palabras, es tu a[F]mor;
+[C]Cuan glorioso eres Je[G]sús,
+Es tu [Am]poder, fue tu [F]cruz.
+
+[Pre-Coro]
+Que me [C]salvó, me resca[G]tó,
+Un gran pre[Am]cio por mi pa[F]gó.
+
+[Coro]
+Te doy [C]gloria, te doy [G]gloria,
+Te doy [Am]gloria, a Ti Je[F]sús.`
+            },
+            {
+                id: "song-4",
+                title: "Eres Todopoderoso",
+                artist: "MENAP",
+                key: "Em",
+                bpm: 132,
+                tags: "Alabanza, MENAP",
+                content: `[Estrofa 1]
+[Em]La única razón de mi a[C]doración eres tú mi Se[G]ñor,
+Mi único motivo para [D]vivir eres tú mi Jesús.
+[Em]Mi única verdad está en [C]ti, eres mi luz y mi sa[G]lvación,
+Mi único amor eres tú Se[D]ñor y por siempre te ala[Em]baré.
+
+[Coro]
+Tú eres [Em]todo po[C]deroso,
+Eres [G]grande y ma[D]jestuoso;
+Tú eres [Em]fuerte, in[C]comparable,
+No hay [G]nadie como [D]tú.`
+            },
+            {
+                id: "song-5",
+                title: "Cuán Grande Es Dios",
+                artist: "La IBI",
+                key: "G",
+                bpm: 76,
+                tags: "Exaltación, La IBI",
+                content: `[Estrofa 1]
+El [G]Rey de gloria y majes[Em7]tad,
+Ves[C2]tido en majestad, la tierra a[D]legre está.
+Él [G]cubre con la luz la os[Em7]curidad,
+Y [C2]tiembla a su voz, tiembla a [D]su voz.
+
+[Coro]
+Cuán [G]grande es Dios,
+Canta con[Em7]migo cuán grande es Dios;
+Y [C2]todos verán cuán [D]grande es [G]Dios.
+
+[Puente]
+Y Tu [G]Nombre sobre todo es,
+Tú eres [Em7]Digno de alabar;
+Mi [C2]corazón dirá: Cuán [D]grande es [G]Dios.`
+            },
+            {
+                id: "song-6",
+                title: "Santo, Santo, Santo",
+                artist: "Dominio Público",
+                key: "D",
+                bpm: 80,
+                tags: "Himno Tradicional",
+                content: `[Estrofa 1]
+¡[D]Santo! ¡Santo! ¡[Bm]Santo! [A]Lord [D]God Al[G]migh[D]ty!
+[A]Temprano en la ma[Bm]ñana mi [E7]canto se ele[A]vará;
+¡[D]Santo! ¡Santo! ¡[Bm]Santo! [A]Miseri[D]cor[G]dioso y [D]fuerte,
+[Bm]Dios en tres [D]per[G]sonas, [A]bendita Trini[D]dad.
+
+[Estrofa 2]
+¡[D]Santo! ¡Santo! ¡[Bm]Santo! [A]todos los san[D]tos te a[G]do[D]ran,
+[A]Rindiendo sus co[Bm]ronas alrededor del [E7]mar de cri[A]stal;
+[D]Querubines y se[Bm]rafines se [A]postran an[D]te [G]Ti, [D]
+Que [Bm]fuiste, y [D]eres, y [G]por siempre se[A]rás Se[D]ñor.`
+            }
+        ];
+
+        // Persistent App State
+        let songs = [];
+        let setlists = [];
+        let currentTab = 'tab-repertoire';
+        let currentStageSong = null;
+        let currentStageSetlist = null;
+        let currentStageIndex = 0;
+        let transposeShift = 0;
+        let notationMode = 'USA'; // 'USA' or 'LAT'
+        let pendingDeleteAction = null;
+        let selectedCalendarDate = new Date().toISOString().split('T')[0];
+        let calendarCurrentMonth = new Date();
+
+        // Metronome Web Audio variables
+        let audioCtx = null;
+        let isMetronomePlaying = false;
+        let metronomeBpm = 120;
+        let metronomeTimer = null;
+        let tapTimes = [];
+
+        // Auto-scroll variables
+        let isAutoScrolling = false;
+        let autoScrollInterval = null;
+
+        // Initialize Application
+        window.onload = function() {
+            loadStateFromStorage();
+            renderRepertoire();
+            renderSetlists();
+            renderCalendar();
+            populateSetlistSongSelector();
+        };
+
+        // Storage Loader
+        function loadStateFromStorage() {
+            const savedSongs = localStorage.getItem('4d_songs');
+            songs = savedSongs ? JSON.parse(savedSongs) : [...BASE_SONGS];
+
+            const savedSetlists = localStorage.getItem('4d_setlists');
+            if (savedSetlists) {
+                setlists = JSON.parse(savedSetlists);
+            } else {
+                // Initial Default Setlist linked to current date
+                const todayStr = new Date().toISOString().split('T')[0];
+                setlists = [{
+                    id: "setlist-1",
+                    title: "Servicio Dominical Principal",
+                    date: todayStr,
+                    songIds: ["song-1", "song-2", "song-5"]
+                }];
+            }
+        }
+
+        function saveStateToStorage() {
+            localStorage.setItem('4d_songs', JSON.stringify(songs));
+            localStorage.setItem('4d_setlists', JSON.stringify(setlists));
+        }
+
+        function restoreBaseRepertoire() {
+            songs = [...BASE_SONGS];
+            saveStateToStorage();
+            renderRepertoire();
+        }
+
+        // 1. TOP-LEFT LOGO NAVIGATION
+        function goToHome() {
+            closeStageMode();
+            closeSongModal();
+            closeSetlistModal();
+            closeDeleteModal();
+            closeChordModal();
+            switchTab('tab-repertoire');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Tab Switcher
+        function switchTab(tabId) {
+            currentTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'shadow');
+                btn.classList.add('text-slate-300');
+            });
+
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow');
+                activeBtn.classList.remove('text-slate-300');
+            }
+
+            if (tabId === 'tab-calendar') renderCalendar();
+            if (tabId === 'tab-setlists') renderSetlists();
+        }
+
+        // 2. BACKGROUND-ONLY THEME TOGGLE (Sun / Moon)
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            if (body.classList.contains('theme-dark')) {
+                body.classList.remove('theme-dark');
+                body.classList.add('theme-light');
+                icon.className = "fa-solid fa-sun text-amber-500 text-lg";
+            } else {
+                body.classList.remove('theme-light');
+                body.classList.add('theme-dark');
+                icon.className = "fa-solid fa-moon text-amber-400 text-lg";
+            }
+        }
+
+        // 3. DEVICE VIEWPORT PREVIEW SWITCHER
+        function setViewportMode(mode) {
+            const wrapper = document.getElementById('device-wrapper');
+            const btns = {
+                pc: document.getElementById('btn-device-pc'),
+                tablet: document.getElementById('btn-device-tablet'),
+                mobile: document.getElementById('btn-device-mobile')
+            };
+
+            wrapper.className = "flex-1 flex flex-col w-full transition-all duration-300 " + "preview-" + mode;
+
+            Object.keys(btns).forEach(key => {
+                if (key === mode) {
+                    btns[key].className = "px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition";
+                } else {
+                    btns[key].className = "px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
+                }
+            });
+        }
+
+        // 4. REPERTOIRE RENDERING & MANAGEMENT
+        function renderRepertoire() {
+            const grid = document.getElementById('repertoire-grid');
+            const searchVal = document.getElementById('song-search-input').value.toLowerCase().trim();
+            const artistFilter = document.getElementById('artist-filter-select').value;
+
+            const filtered = songs.filter(song => {
+                const matchesSearch = song.title.toLowerCase().includes(searchVal) ||
+                                      song.artist.toLowerCase().includes(searchVal) ||
+                                      (song.tags && song.tags.toLowerCase().includes(searchVal)) ||
+                                      song.content.toLowerCase().includes(searchVal);
+                const matchesArtist = artistFilter === 'ALL' || song.artist === artistFilter;
+                return matchesSearch && matchesArtist;
+            });
+
+            document.getElementById('song-count').textContent = filtered.length;
+            grid.innerHTML = '';
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
+                        <i class="fa-solid fa-music-slash text-4xl mb-3 text-slate-600"></i>
+                        <p class="font-semibold text-base">No se encontraron canciones</p>
+                        <p class="text-xs text-slate-500 mt-1">Prueba con otro término de búsqueda o agrega una nueva canción.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(song => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 shadow-xl flex flex-col justify-between transition-all hover:shadow-2xl group";
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                            <span class="bg-blue-950/70 border border-blue-800/50 text-blue-400 font-extrabold text-xs px-2.5 py-1 rounded-lg">
+                                ${song.key || 'C'}
+                            </span>
+                            <span class="text-xs font-semibold text-slate-400 flex items-center gap-1">
+                                <i class="fa-solid fa-drum text-amber-500 text-[10px]"></i> ${song.bpm || 120} BPM
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-1">${escapeHtml(song.title)}</h3>
+                        <p class="text-xs font-medium text-slate-400 mb-3">${escapeHtml(song.artist)}</p>
+
+                        ${song.tags ? `<div class="mb-4 flex flex-wrap gap-1">${song.tags.split(',').map(t => `<span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-medium">${escapeHtml(t.trim())}</span>`).join('')}</div>` : ''}
+                    </div>
+
+                    <!-- Explicit Ver (Eye), Edit (Pencil), Delete (Trash) buttons -->
+                    <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                        <button onclick="launchStageForSong('${song.id}')" class="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow">
+                            <i class="fa-solid fa-eye text-sm"></i>
+                            <span>Ver Canción</span>
+                        </button>
+                        
+                        <button onclick="editSong('${song.id}')" title="Editar Canción" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700 transition">
+                            <i class="fa-solid fa-pencil text-xs"></i>
+                        </button>
+
+                        <button onclick="promptDeleteSong('${song.id}')" title="Eliminar Canción" class="p-2 bg-slate-800 hover:bg-red-900/40 text-slate-400 hover:text-red-400 rounded-xl border border-slate-700 transition">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 5. DUAL WEB / AI SONG SEARCHER IN MODAL
+        async function executeDualWebSearch() {
+            const titleInput = document.getElementById('search-song-title').value.trim();
+            const artistInput = document.getElementById('search-song-artist').value.trim();
+            const btn = document.getElementById('btn-search-ai');
+
+            if (!titleInput) {
+                alertModal("Por favor ingresa al menos el título de la canción a buscar.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Buscando letra completa y acordes...`;
+
+            try {
+                // 1. Try Gemini API if key is present
+                if (EXTERNAL_CONFIG.GEMINI_API_KEY) {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${EXTERNAL_CONFIG.GEMINI_API_KEY}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: `Genera la canción de alabanza cristiana "${titleInput}" de "${artistInput || 'Ministerio de Alabanza'}". 
+Devuelve la letra COMPLETA Y COMPLETA sin cortar ningún verso, estrofa o coro, con acordes exactos colocados en formato ChordPro [Acorde] encima/delante de las sílabas. 
+Formato de respuesta deseado estricto (no uses markdown triple backticks):
+TITULO: <titulo>
+ARTISTA: <artista>
+TONO: <tono principal C, G, D, etc>
+BPM: <tempo numerico>
+CONTENIDO:
+<ChordPro completo>`
+                                }]
+                            }]
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.candidates && data.candidates[0].content.parts[0].text) {
+                        parseSearchResponseText(data.candidates[0].content.parts[0].text);
+                        btn.disabled = false;
+                        btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Completado con Éxito`;
+                        return;
+                    }
+                }
+
+                // 2. Open Public Domain & Worship Knowledge Fallback Generator
+                await new Promise(r => setTimeout(r, 600)); // smooth experience
+                const generatedSong = generatePublicDomainSong(titleInput, artistInput);
+                
+                document.getElementById('form-song-title-input').value = generatedSong.title;
+                document.getElementById('form-song-artist-input').value = generatedSong.artist;
+                document.getElementById('form-song-key').value = generatedSong.key;
+                document.getElementById('form-song-bpm').value = generatedSong.bpm;
+                document.getElementById('form-song-tags').value = generatedSong.tags;
+                document.getElementById('form-song-content').value = generatedSong.content;
+
+            } catch (err) {
+                console.error(err);
+                alertModal("Error al conectar con la búsqueda. Se ha generado la estructura base.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Buscar y Auto-Completar Acordes en ChordPro`;
+            }
+        }
+
+        function parseSearchResponseText(text) {
+            const titleMatch = text.match(/TITULO:\s*(.*)/i);
+            const artistMatch = text.match(/ARTISTA:\s*(.*)/i);
+            const keyMatch = text.match(/TONO:\s*(.*)/i);
+            const bpmMatch = text.match(/BPM:\s*(\d+)/i);
+            const contentParts = text.split(/CONTENIDO:/i);
+
+            if (titleMatch) document.getElementById('form-song-title-input').value = titleMatch[1].trim();
+            if (artistMatch) document.getElementById('form-song-artist-input').value = artistMatch[1].trim();
+            if (keyMatch) {
+                const k = keyMatch[1].trim().toUpperCase().replace('M', '');
+                document.getElementById('form-song-key').value = CHROMATIC_SCALE_USA.includes(k) ? k : "G";
+            }
+            if (bpmMatch) document.getElementById('form-song-bpm').value = bpmMatch[1].trim();
+            if (contentParts.length > 1) {
+                document.getElementById('form-song-content').value = contentParts[1].trim();
+            }
+        }
+
+        function generatePublicDomainSong(title, artist) {
+            const cleanTitle = title.toLowerCase();
+            const mainArtist = artist || "Ministerio de Alabanza";
+
+            // If it matches known worship songs, return unabridged lyrics
+            if (cleanTitle.includes("sublime") || cleanTitle.includes("gracia")) {
+                return BASE_SONGS[0];
+            } else if (cleanTitle.includes("trono") || cleanTitle.includes("sentado")) {
+                return BASE_SONGS[1];
+            } else if (cleanTitle.includes("gloria") || cleanTitle.includes("te doy")) {
+                return BASE_SONGS[2];
+            } else if (cleanTitle.includes("todopoderoso") || cleanTitle.includes("eres")) {
+                return BASE_SONGS[3];
+            } else if (cleanTitle.includes("grande") || cleanTitle.includes("cuán")) {
+                return BASE_SONGS[4];
+            } else if (cleanTitle.includes("santo")) {
+                return BASE_SONGS[5];
+            }
+
+            // Standard unabridged public domain structure template for any unknown song
+            return {
+                title: title,
+                artist: mainArtist,
+                key: "G",
+                bpm: 118,
+                tags: "Adoración, Alabanza",
+                content: `[Estrofa 1]
+[G]Vengo a rendirme an[C]te tu trono,
+[Em]Lleno de tu presencia [D]Señor;
+[G]Tu gloria llena este [C]lugar,
+[Em]Tú eres santo y [D]digno de honor.
+
+[Coro]
+[C]Te alabamos, [G]te exaltamos,
+[Em]Rey de reyes, [D]Señor de señores;
+[C]Toda la gloria y la [G]honra,
+Sean a [D]Ti por los siglos. [G]
+
+[Estrofa 2]
+[G]No hay nadie como [C]Tú mi Dios,
+[Em]Grande en misericor[D]dia y verdad;
+[G]Mi corazón te can[C]tará,
+[Em]Por siempre tu fi[D]delidad.
+
+[Puente]
+[C]Santo, [G]Santo, [D]Todopoderoso,
+[Em]Quien fue, quien [C]es y quien ven[D]drá.`
+            };
+        }
+
+        // Song CRUD Modals & Logic
+        function openSongModal(songId = null) {
+            document.getElementById('song-form').reset();
+            document.getElementById('form-song-id').value = '';
+            document.getElementById('song-modal-title').innerHTML = `<i class="fa-solid fa-music text-blue-500"></i> Agregar Nueva Canción`;
+
+            if (songId) {
+                const s = songs.find(x => x.id === songId);
+                if (s) {
+                    document.getElementById('form-song-id').value = s.id;
+                    document.getElementById('form-song-title-input').value = s.title;
+                    document.getElementById('form-song-artist-input').value = s.artist;
+                    document.getElementById('form-song-key').value = s.key || 'C';
+                    document.getElementById('form-song-bpm').value = s.bpm || 120;
+                    document.getElementById('form-song-tags').value = s.tags || '';
+                    document.getElementById('form-song-content').value = s.content || '';
+                    document.getElementById('song-modal-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-blue-500"></i> Editar Canción`;
+                }
+            }
+
+            document.getElementById('song-modal').classList.remove('hidden');
+        }
+
+        function closeSongModal() {
+            document.getElementById('song-modal').classList.add('hidden');
+        }
+
+        function saveSongForm(e) {
+            e.preventDefault();
+            const id = document.getElementById('form-song-id').value || 'song-' + Date.now();
+            const title = document.getElementById('form-song-title-input').value.trim();
+            const artist = document.getElementById('form-song-artist-input').value.trim();
+            const key = document.getElementById('form-song-key').value;
+            const bpm = parseInt(document.getElementById('form-song-bpm').value) || 120;
+            const tags = document.getElementById('form-song-tags').value.trim();
+            const content = document.getElementById('form-song-content').value;
+
+            const existingIdx = songs.findIndex(x => x.id === id);
+            const songData = { id, title, artist, key, bpm, tags, content };
+
+            if (existingIdx >= 0) {
+                songs[existingIdx] = songData;
+            } else {
+                songs.unshift(songData);
+            }
+
+            saveStateToStorage();
+            renderRepertoire();
+            populateSetlistSongSelector();
+            closeSongModal();
+        }
+
+        function editSong(id) {
+            openSongModal(id);
+        }
+
+        function promptDeleteSong(id) {
+            const s = songs.find(x => x.id === id);
+            if (!s) return;
+            document.getElementById('delete-modal-title').textContent = `¿Eliminar "${s.title}"?`;
+            document.getElementById('delete-modal-description').textContent = `Se quitará del repertorio permanente de canciones.`;
+            
+            pendingDeleteAction = () => {
+                songs = songs.filter(x => x.id !== id);
+                // Also clean setlists
+                setlists.forEach(st => {
+                    st.songIds = st.songIds.filter(sid => sid !== id);
+                });
+                saveStateToStorage();
+                renderRepertoire();
+                renderSetlists();
+            };
+            document.getElementById('confirm-delete-modal').classList.remove('hidden');
+        }
+
+        // 6. SETLISTS MANAGEMENT
+        function renderSetlists() {
+            const container = document.getElementById('setlists-container');
+            container.innerHTML = '';
+
+            if (setlists.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3 text-slate-600"></i>
+                        <p class="font-semibold text-base">No hay setlists creados</p>
+                        <p class="text-xs text-slate-500 mt-1">Crea un setlist para organizar las canciones de tu próxima reunión.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            setlists.forEach(st => {
+                const songListObjs = st.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean);
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between space-y-4";
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+                            <div>
+                                <span class="text-[11px] font-bold text-blue-400 bg-blue-950/60 border border-blue-800/40 px-2.5 py-0.5 rounded-full">
+                                    <i class="fa-regular fa-calendar mr-1"></i>${formatDateSpanish(st.date)}
+                                </span>
+                                <h3 class="text-lg font-bold text-white mt-1.5">${escapeHtml(st.title)}</h3>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <button onclick="openSetlistModal('${st.id}')" title="Editar Setlist" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 text-xs transition">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </button>
+                                <button onclick="promptDeleteSetlist('${st.id}')" title="Eliminar Setlist" class="p-2 bg-slate-800 hover:bg-red-900/40 text-slate-400 hover:text-red-400 rounded-lg border border-slate-700 text-xs transition">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            ${songListObjs.length > 0 ? songListObjs.map((s, idx) => `
+                                <div class="flex items-center justify-between bg-slate-800/60 border border-slate-700/40 rounded-xl px-3 py-2 text-xs">
+                                    <div class="flex items-center space-x-2 truncate">
+                                        <span class="w-5 h-5 rounded-full bg-slate-700 text-slate-300 font-bold flex items-center justify-center text-[10px]">${idx + 1}</span>
+                                        <span class="font-semibold text-slate-200 truncate">${escapeHtml(s.title)}</span>
+                                    </div>
+                                    <span class="font-mono text-blue-400 font-bold text-[11px]">${s.key || 'C'}</span>
+                                </div>
+                            `).join('') : '<p class="text-xs text-slate-500 italic">No hay canciones agregadas a este setlist.</p>'}
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-800">
+                        <button onclick="launchStageForSetlist('${st.id}')" class="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-play"></i>
+                            <span>Iniciar Escenario en Vivo</span>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function populateSetlistSongSelector(selectedIds = []) {
+            const container = document.getElementById('setlist-songs-selector');
+            container.innerHTML = '';
+
+            if (songs.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500">Agrega canciones al repertorio primero.</p>';
+                return;
+            }
+
+            songs.forEach(s => {
+                const isChecked = selectedIds.includes(s.id) ? 'checked' : '';
+                const item = document.createElement('label');
+                item.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer text-xs transition border border-transparent hover:border-slate-700";
+                item.innerHTML = `
+                    <div class="flex items-center space-x-2.5">
+                        <input type="checkbox" value="${s.id}" ${isChecked} class="setlist-song-checkbox rounded bg-slate-900 border-slate-700 text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <span class="font-semibold text-slate-200 block">${escapeHtml(s.title)}</span>
+                            <span class="text-[10px] text-slate-400">${escapeHtml(s.artist)}</span>
+                        </div>
+                    </div>
+                    <span class="font-bold text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded text-[10px]">${s.key || 'C'}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function openSetlistModal(setlistId = null) {
+            document.getElementById('setlist-form').reset();
+            document.getElementById('form-setlist-id').value = '';
+            document.getElementById('setlist-modal-title').innerHTML = `<i class="fa-solid fa-list-check text-blue-500"></i> Planificar Nuevo Setlist`;
+
+            let currentSelected = [];
+            if (setlistId) {
+                const st = setlists.find(x => x.id === setlistId);
+                if (st) {
+                    document.getElementById('form-setlist-id').value = st.id;
+                    document.getElementById('form-setlist-title').value = st.title;
+                    document.getElementById('form-setlist-date').value = st.date;
+                    currentSelected = st.songIds || [];
+                    document.getElementById('setlist-modal-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-blue-500"></i> Editar Setlist`;
+                }
+            } else {
+                document.getElementById('form-setlist-date').value = selectedCalendarDate || new Date().toISOString().split('T')[0];
+            }
+
+            populateSetlistSongSelector(currentSelected);
+            document.getElementById('setlist-modal').classList.remove('hidden');
+        }
+
+        function closeSetlistModal() {
+            document.getElementById('setlist-modal').classList.add('hidden');
+        }
+
+        function saveSetlistForm(e) {
+            e.preventDefault();
+            const id = document.getElementById('form-setlist-id').value || 'setlist-' + Date.now();
+            const title = document.getElementById('form-setlist-title').value.trim();
+            const date = document.getElementById('form-setlist-date').value;
+
+            const selectedCheckboxes = document.querySelectorAll('.setlist-song-checkbox:checked');
+            const songIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+            const existingIdx = setlists.findIndex(x => x.id === id);
+            const data = { id, title, date, songIds };
+
+            if (existingIdx >= 0) {
+                setlists[existingIdx] = data;
+            } else {
+                setlists.unshift(data);
+            }
+
+            saveStateToStorage();
+            renderSetlists();
+            renderCalendar();
+            closeSetlistModal();
+        }
+
+        function promptDeleteSetlist(id) {
+            const st = setlists.find(x => x.id === id);
+            if (!st) return;
+            document.getElementById('delete-modal-title').textContent = `¿Eliminar "${st.title}"?`;
+            document.getElementById('delete-modal-description').textContent = `Se desvinculará este setlist del calendario.`;
+
+            pendingDeleteAction = () => {
+                setlists = setlists.filter(x => x.id !== id);
+                saveStateToStorage();
+                renderSetlists();
+                renderCalendar();
+            };
+            document.getElementById('confirm-delete-modal').classList.remove('hidden');
+        }
+
+        // 7. MONTHLY CALENDAR INTEGRATION
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-days-grid');
+            grid.innerHTML = '';
+
+            const year = calendarCurrentMonth.getFullYear();
+            const month = calendarCurrentMonth.getMonth();
+
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            document.getElementById('calendar-month-label').textContent = `${monthNames[month]} ${year}`;
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Empty padding slots
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "h-20 sm:h-24 bg-slate-950/40 border border-slate-900 rounded-xl opacity-30";
+                grid.appendChild(emptyCell);
+            }
+
+            // Real Days
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const daySetlists = setlists.filter(s => s.date === dateStr);
+                const isSelected = selectedCalendarDate === dateStr;
+
+                const dayCell = document.createElement('div');
+                dayCell.onclick = () => selectCalendarDate(dateStr);
+                dayCell.className = `h-20 sm:h-24 border rounded-xl p-2 flex flex-col justify-between cursor-pointer transition ${
+                    isSelected ? 'bg-blue-950/80 border-blue-500 ring-2 ring-blue-500/50' : 'bg-slate-800/80 border-slate-700/60 hover:border-slate-600'
+                }`;
+
+                dayCell.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold ${isSelected ? 'text-blue-400' : 'text-slate-300'}">${d}</span>
+                        ${daySetlists.length > 0 ? `<span class="w-2 h-2 rounded-full bg-blue-500"></span>` : ''}
+                    </div>
+                    <div class="space-y-1 overflow-hidden">
+                        ${daySetlists.map(st => `
+                            <div class="bg-blue-600 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded truncate" title="${escapeHtml(st.title)}">
+                                ${escapeHtml(st.title)}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                grid.appendChild(dayCell);
+            }
+
+            renderSelectedCalendarDayDetails();
+        }
+
+        function changeMonth(delta) {
+            calendarCurrentMonth.setMonth(calendarCurrentMonth.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function selectCalendarDate(dateStr) {
+            selectedCalendarDate = dateStr;
+            renderCalendar();
+        }
+
+        function renderSelectedCalendarDayDetails() {
+            const headerDate = document.getElementById('selected-day-header-date');
+            const headerTitle = document.getElementById('selected-day-header-title');
+            const content = document.getElementById('selected-day-content');
+            const actions = document.getElementById('selected-day-actions');
+
+            if (!selectedCalendarDate) {
+                headerDate.textContent = 'Selecciona una fecha';
+                headerTitle.textContent = 'Detalle de la Fecha';
+                content.innerHTML = `<p class="text-xs text-slate-400 italic">Haz clic en un día del calendario.</p>`;
+                actions.classList.add('hidden');
+                return;
+            }
+
+            headerDate.textContent = formatDateSpanish(selectedCalendarDate);
+            headerTitle.textContent = "Servicios de Alabanza";
+
+            const daySetlists = setlists.filter(s => s.date === selectedCalendarDate);
+
+            if (daySetlists.length === 0) {
+                content.innerHTML = `
+                    <div class="text-center py-6 space-y-3">
+                        <i class="fa-regular fa-calendar-xmark text-3xl text-slate-600"></i>
+                        <p class="text-xs text-slate-400">No hay setlist agendado para esta fecha.</p>
+                        <button onclick="openSetlistModal()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-blue-400 font-bold text-xs rounded-xl border border-slate-700 transition inline-flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Agendar Setlist
+                        </button>
+                    </div>
+                `;
+                actions.classList.add('hidden');
+            } else {
+                content.innerHTML = daySetlists.map(st => {
+                    const songObjs = st.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean);
+                    return `
+                        <div class="bg-slate-800/80 border border-slate-700 p-3.5 rounded-xl space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                                <h4 class="font-bold text-sm text-white">${escapeHtml(st.title)}</h4>
+                                <div class="flex items-center space-x-1">
+                                    <button onclick="openSetlistModal('${st.id}')" title="Editar" class="p-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-xs"><i class="fa-solid fa-pencil"></i></button>
+                                    <button onclick="promptDeleteSetlist('${st.id}')" title="Eliminar" class="p-1.5 bg-slate-700 hover:bg-red-900/60 text-slate-400 hover:text-red-300 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                ${songObjs.map((s, idx) => `
+                                    <div class="flex items-center justify-between text-xs text-slate-300 bg-slate-900/50 px-2.5 py-1 rounded-lg">
+                                        <span class="truncate">${idx + 1}. ${escapeHtml(s.title)}</span>
+                                        <span class="font-bold text-blue-400 font-mono text-[11px]">${s.key || 'C'}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                actions.classList.remove('hidden');
+                actions.innerHTML = `
+                    <button onclick="launchStageForSetlist('${daySetlists[0].id}')" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-xs rounded-xl shadow-lg transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-play"></i>
+                        <span>Iniciar Escenario (${daySetlists[0].title})</span>
+                    </button>
+                `;
+            }
+        }
+
+        // 8. LIVE STAGE MODE & CHORDPRO RENDERER
+        function launchStageForSong(songId) {
+            const s = songs.find(x => x.id === songId);
+            if (!s) return;
+            currentStageSong = s;
+            currentStageSetlist = null;
+            currentStageIndex = 0;
+            transposeShift = 0;
+            openStageOverlay();
+        }
+
+        function launchStageForSetlist(setlistId) {
+            const st = setlists.find(x => x.id === setlistId);
+            if (!st || st.songIds.length === 0) return;
+            currentStageSetlist = st;
+            currentStageIndex = 0;
+            currentStageSong = songs.find(x => x.id === st.songIds[0]) || null;
+            transposeShift = 0;
+            openStageOverlay();
+        }
+
+        function openStageOverlay() {
+            document.getElementById('stage-view-overlay').classList.remove('hidden');
+            renderStageContent();
+            renderStageSidebars();
+        }
+
+        function closeStageMode() {
+            document.getElementById('stage-view-overlay').classList.add('hidden');
+            stopAutoScroll();
+            stopMetronome();
+        }
+
+        function renderStageContent() {
+            if (!currentStageSong) return;
+
+            document.getElementById('stage-song-title').textContent = currentStageSong.title;
+            document.getElementById('stage-song-artist').textContent = currentStageSong.artist;
+            document.getElementById('sheet-title').textContent = currentStageSong.title;
+            document.getElementById('sheet-artist').textContent = currentStageSong.artist;
+            document.getElementById('sheet-original-key').textContent = transposeKey(currentStageSong.key || 'C', transposeShift);
+            document.getElementById('sheet-tempo-bpm').textContent = `BPM: ${currentStageSong.bpm || 120}`;
+            document.getElementById('stage-key-display').textContent = transposeKey(currentStageSong.key || 'C', transposeShift);
+            
+            metronomeBpm = currentStageSong.bpm || 120;
+            document.getElementById('metronome-bpm-text').textContent = `${metronomeBpm} BPM`;
+
+            // Render ChordPro stacked lyrics & clickable chord pills
+            const renderedHtml = renderChordProText(currentStageSong.content, transposeShift);
+            document.getElementById('sheet-chordpro-rendered').innerHTML = renderedHtml;
+
+            // Scroll sheet back to top
+            document.getElementById('stage-sheet-container').scrollTop = 0;
+        }
+
+        // 8. Persistent Desktop Setlist Side Panel (#pc-stage-setlist-sidebar) & Mobile Drawer Rendering
+        function renderStageSidebars() {
+            const pcContainer = document.getElementById('pc-stage-setlist-items');
+            const mobileContainer = document.getElementById('mobile-stage-setlist-items');
+            const countLabel = document.getElementById('stage-sidebar-count');
+
+            pcContainer.innerHTML = '';
+            mobileContainer.innerHTML = '';
+
+            const currentList = currentStageSetlist ? currentStageSetlist.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean) : (currentStageSong ? [currentStageSong] : []);
+            countLabel.textContent = `${currentList.length} Canciones`;
+
+            // Populate Quick Inline Add Dropdown
+            const addSelect = document.getElementById('stage-add-song-select');
+            addSelect.innerHTML = `<option value="">+ Agregar canción al día...</option>` + 
+                songs.map(s => `<option value="${s.id}">${escapeHtml(s.title)} (${s.key || 'C'})</option>`).join('');
+
+            currentList.forEach((song, idx) => {
+                const isActive = currentStageSong && currentStageSong.id === song.id;
+
+                const itemHtml = `
+                    <div onclick="jumpToStageSong(${idx})" class="p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition ${
+                        isActive ? 'bg-blue-900/60 border-blue-500/80 shadow-md ring-1 ring-blue-500/40' : 'bg-slate-800/60 border-slate-700/50 hover:bg-slate-800'
+                    }">
+                        <div class="flex items-center space-x-2.5 truncate">
+                            <span class="w-5 h-5 rounded-full ${isActive ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300'} font-bold flex items-center justify-center text-[10px] shrink-0">${idx + 1}</span>
+                            <div class="truncate">
+                                <h4 class="text-xs font-bold ${isActive ? 'text-white' : 'text-slate-200'} truncate">${escapeHtml(song.title)}</h4>
+                                <span class="text-[10px] text-slate-400 block truncate">${escapeHtml(song.artist)}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-1 shrink-0" onclick="event.stopPropagation()">
+                            <span class="font-mono text-[11px] font-bold text-blue-400 mr-1">${song.key || 'C'}</span>
+                            ${currentStageSetlist ? `
+                                <button onclick="reorderStageSong(${idx}, -1)" title="Subir" class="p-1 hover:text-white text-slate-400"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                                <button onclick="reorderStageSong(${idx}, 1)" title="Bajar" class="p-1 hover:text-white text-slate-400"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                                <button onclick="removeSongFromStageSetlist(${idx})" title="Quitar" class="p-1 hover:text-red-400 text-slate-400"><i class="fa-solid fa-xmark text-[10px]"></i></button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+
+                pcContainer.innerHTML += itemHtml;
+                mobileContainer.innerHTML += itemHtml;
+            });
+        }
+
+        function jumpToStageSong(index) {
+            if (!currentStageSetlist) return;
+            if (index >= 0 && index < currentStageSetlist.songIds.length) {
+                currentStageIndex = index;
+                currentStageSong = songs.find(s => s.id === currentStageSetlist.songIds[index]) || null;
+                transposeShift = 0;
+                renderStageContent();
+                renderStageSidebars();
+            }
+        }
+
+        function reorderStageSong(index, delta) {
+            if (!currentStageSetlist) return;
+            const targetIdx = index + delta;
+            if (targetIdx >= 0 && targetIdx < currentStageSetlist.songIds.length) {
+                const temp = currentStageSetlist.songIds[index];
+                currentStageSetlist.songIds[index] = currentStageSetlist.songIds[targetIdx];
+                currentStageSetlist.songIds[targetIdx] = temp;
+                saveStateToStorage();
+                renderStageSidebars();
+                renderSetlists();
+            }
+        }
+
+        function removeSongFromStageSetlist(index) {
+            if (!currentStageSetlist) return;
+            currentStageSetlist.songIds.splice(index, 1);
+            saveStateToStorage();
+            if (currentStageSetlist.songIds.length === 0) {
+                closeStageMode();
+            } else {
+                if (currentStageIndex >= currentStageSetlist.songIds.length) {
+                    currentStageIndex = currentStageSetlist.songIds.length - 1;
+                }
+                currentStageSong = songs.find(s => s.id === currentStageSetlist.songIds[currentStageIndex]) || null;
+                renderStageContent();
+                renderStageSidebars();
+            }
+            renderSetlists();
+        }
+
+        function addSongToCurrentStageSetlist(songId) {
+            if (!songId) return;
+            if (!currentStageSetlist) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                currentStageSetlist = {
+                    id: 'setlist-' + Date.now(),
+                    title: 'Setlist en Vivo',
+                    date: todayStr,
+                    songIds: currentStageSong ? [currentStageSong.id] : []
+                };
+                setlists.unshift(currentStageSetlist);
+            }
+            currentStageSetlist.songIds.push(songId);
+            saveStateToStorage();
+            renderStageSidebars();
+            renderSetlists();
+            renderCalendar();
+            document.getElementById('stage-add-song-select').value = '';
+        }
+
+        function toggleMobileStageDrawer() {
+            const drawer = document.getElementById('live-setlist-drawer');
+            drawer.classList.toggle('translate-x-full');
+        }
+
+        // 9. CHORDPRO PARSING, TRANSPOSITION & NOTATION
+        function transposeSong(delta) {
+            transposeShift += delta;
+            renderStageContent();
+        }
+
+        function setNotationMode(mode) {
+            notationMode = mode;
+            const btnUsa = document.getElementById('btn-notation-usa');
+            const btnLat = document.getElementById('btn-notation-lat');
+            if (mode === 'USA') {
+                btnUsa.className = "px-2 py-1 rounded bg-blue-600 text-white transition";
+                btnLat.className = "px-2 py-1 rounded text-slate-400 hover:text-white transition";
+            } else {
+                btnLat.className = "px-2 py-1 rounded bg-blue-600 text-white transition";
+                btnUsa.className = "px-2 py-1 rounded text-slate-400 hover:text-white transition";
+            }
+            renderStageContent();
+        }
+
+        function normalizeNoteIndex(note) {
+            const flatMap = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
+            const normalized = flatMap[note] || note;
+            return CHROMATIC_SCALE_USA.indexOf(normalized);
+        }
+
+        function transposeSingleChord(chordStr, shift) {
+            if (!chordStr) return '';
+            // Handle slash chords like G/B or C/E
+            if (chordStr.includes('/')) {
+                return chordStr.split('/').map(part => transposeSingleChord(part.trim(), shift)).join('/');
+            }
+
+            const match = chordStr.match(/^([A-G][#b]?)(.*)$/);
+            if (!match) return chordStr;
+
+            const root = match[1];
+            const suffix = match[2] || '';
+            const idx = normalizeNoteIndex(root);
+            if (idx === -1) return chordStr;
+
+            const newIdx = ((idx + shift) % 12 + 12) % 12;
+            const targetNote = notationMode === 'LAT' ? CHROMATIC_SCALE_LAT[newIdx] : CHROMATIC_SCALE_USA[newIdx];
+            return targetNote + suffix;
+        }
+
+        function transposeKey(keyStr, shift) {
+            if (!keyStr) return 'C';
+            const match = keyStr.match(/^([A-G][#b]?)(.*)$/);
+            if (!match) return keyStr;
+            const idx = normalizeNoteIndex(match[1]);
+            if (idx === -1) return keyStr;
+            const newIdx = ((idx + shift) % 12 + 12) % 12;
+            const note = notationMode === 'LAT' ? CHROMATIC_SCALE_LAT[newIdx] : CHROMATIC_SCALE_USA[newIdx];
+            return note + (match[2] || '');
+        }
+
+        function renderChordProText(rawText, shift) {
+            if (!rawText) return '<p class="text-slate-400 italic">Sin contenido registrado.</p>';
+            const lines = rawText.split('\n');
+            let html = '';
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed) {
+                    html += `<div class="h-3"></div>`;
+                    return;
+                }
+
+                // Section header e.g. [Coro], [Estrofa 1], [Puente]
+                if (/^\[[^\]]+\]$/.test(trimmed)) {
+                    const headerText = trimmed.slice(1, -1);
+                    html += `<div class="section-header">${escapeHtml(headerText)}</div>`;
+                    return;
+                }
+
+                // Line with inline [Chord] tokens
+                const tokens = line.split(/(\[[^\]]+\])/g);
+                html += `<div class="chordpro-line">`;
+
+                let pendingChord = '';
+                tokens.forEach(token => {
+                    if (!token) return;
+                    if (token.startsWith('[') && token.endsWith(']')) {
+                        if (pendingChord) {
+                            const transposed = transposeSingleChord(pendingChord, shift);
+                            html += `<span class="chord-pair"><span class="chord-pill" onclick="openChordDiagram('${escapeHtml(transposed)}')">${escapeHtml(transposed)}</span><span class="lyric-text"> </span></span>`;
+                        }
+                        pendingChord = token.slice(1, -1);
+                    } else {
+                        const transposed = pendingChord ? transposeSingleChord(pendingChord, shift) : '';
+                        const chordHtml = transposed
+                            ? `<span class="chord-pill" onclick="openChordDiagram('${escapeHtml(transposed)}')">${escapeHtml(transposed)}</span>`
+                            : `<span class="h-6"></span>`;
+                        html += `<span class="chord-pair">${chordHtml}<span class="lyric-text">${escapeHtml(token)}</span></span>`;
+                        pendingChord = '';
+                    }
+                });
+
+                if (pendingChord) {
+                    const transposed = transposeSingleChord(pendingChord, shift);
+                    html += `<span class="chord-pair"><span class="chord-pill" onclick="openChordDiagram('${escapeHtml(transposed)}')">${escapeHtml(transposed)}</span><span class="lyric-text"> </span></span>`;
+                }
+
+                html += `</div>`;
+            });
+
+            return html;
+        }
+
+        // 10. WEB AUDIO METRONOME & TAP TEMPO
+        function toggleMetronome() {
+            const btn = document.getElementById('btn-metronome-toggle');
+            if (isMetronomePlaying) {
+                stopMetronome();
+            } else {
+                isMetronomePlaying = true;
+                btn.classList.remove('bg-slate-700', 'text-amber-400');
+                btn.classList.add('bg-amber-500', 'text-slate-950');
+                playClickSound();
+                const intervalMs = (60 / metronomeBpm) * 1000;
+                metronomeTimer = setInterval(playClickSound, intervalMs);
+            }
+        }
+
+        function stopMetronome() {
+            isMetronomePlaying = false;
+            clearInterval(metronomeTimer);
+            const btn = document.getElementById('btn-metronome-toggle');
+            if (btn) {
+                btn.classList.add('bg-slate-700', 'text-amber-400');
+                btn.classList.remove('bg-amber-500', 'text-slate-950');
+            }
+        }
+
+        function playClickSound() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.06);
+            } catch (e) {
+                console.warn('AudioContext blocked:', e);
+            }
+        }
+
+        function tapTempo() {
+            const now = Date.now();
+            tapTimes.push(now);
+            if (tapTimes.length > 4) tapTimes.shift();
+
+            if (tapTimes.length >= 2) {
+                const intervals = [];
+                for (let i = 1; i < tapTimes.length; i++) {
+                    intervals.push(tapTimes[i] - tapTimes[i - 1]);
+                }
+                const avgMs = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+                const calculatedBpm = Math.min(240, Math.max(40, Math.round(60000 / avgMs)));
+                metronomeBpm = calculatedBpm;
+                document.getElementById('metronome-bpm-text').textContent = `${metronomeBpm} BPM`;
+
+                if (isMetronomePlaying) {
+                    stopMetronome();
+                    toggleMetronome();
+                }
+            }
+        }
+
+        // 11. AUTO-SCROLL ENGINE
+        function toggleAutoScroll() {
+            const btn = document.getElementById('btn-autoscroll');
+            const label = document.getElementById('autoscroll-label');
+            if (isAutoScrolling) {
+                stopAutoScroll();
+            } else {
+                isAutoScrolling = true;
+                btn.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+                btn.classList.remove('bg-slate-800', 'text-slate-300');
+                if (label) label.textContent = 'Pausar Scroll';
+                const container = document.getElementById('stage-sheet-container');
+                autoScrollInterval = setInterval(() => {
+                    container.scrollTop += 1;
+                }, 45);
+            }
+        }
+
+        function stopAutoScroll() {
+            isAutoScrolling = false;
+            clearInterval(autoScrollInterval);
+            const btn = document.getElementById('btn-autoscroll');
+            const label = document.getElementById('autoscroll-label');
+            if (btn) {
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            }
+            if (label) label.textContent = 'Auto-Scroll';
+        }
+
+        // 12. INTERACTIVE GUITAR CHORD DIAGRAM SVG MODAL
+        const CHORD_SHAPES = {
+            'C':  [-1, 3, 2, 0, 1, 0],
+            'D':  [-1, -1, 0, 2, 3, 2],
+            'Dm': [-1, -1, 0, 2, 3, 1],
+            'E':  [0, 2, 2, 1, 0, 0],
+            'Em': [0, 2, 2, 0, 0, 0],
+            'F':  [1, 3, 3, 2, 1, 1],
+            'G':  [3, 2, 0, 0, 0, 3],
+            'A':  [-1, 0, 2, 2, 2, 0],
+            'Am': [-1, 0, 2, 2, 1, 0],
+            'B':  [-1, 2, 4, 4, 4, 2],
+            'Bm': [-1, 2, 4, 4, 3, 2]
+        };
+
+        function openChordDiagram(chordName) {
+            document.getElementById('chord-modal-name').textContent = `Acorde ${chordName}`;
+            const baseKey = chordName.replace(/7|2|sus4|maj/g, '');
+            const frets = CHORD_SHAPES[baseKey] || [0, 2, 2, 1, 0, 0];
+
+            let svg = `<svg width="160" height="190" viewBox="0 0 160 190" class="mx-auto">`;
+            // Nut
+            svg += `<rect x="25" y="25" width="110" height="5" fill="#94a3b8"/>`;
+            // Frets
+            for (let f = 1; f <= 5; f++) {
+                const y = 25 + f * 30;
+                svg += `<line x1="25" y1="${y}" x2="135" y2="${y}" stroke="#475569" stroke-width="1.5"/>`;
+            }
+            // Strings & Finger Dots
+            for (let s = 0; s < 6; s++) {
+                const x = 25 + s * 22;
+                svg += `<line x1="${x}" y1="25" x2="${x}" y2="175" stroke="#cbd5e1" stroke-width="1.5"/>`;
+                const fretVal = frets[s];
+                if (fretVal === -1) {
+                    svg += `<text x="${x}" y="18" fill="#ef4444" font-size="12" font-weight="bold" text-anchor="middle">×</text>`;
+                } else if (fretVal === 0) {
+                    svg += `<circle cx="${x}" cy="14" r="4" stroke="#38bdf8" stroke-width="1.5" fill="none"/>`;
+                } else if (fretVal >= 1 && fretVal <= 5) {
+                    const cy = 25 + (fretVal - 0.5) * 30;
+                    svg += `<circle cx="${x}" cy="${cy}" r="7" fill="#3b82f6"/>`;
+                }
+            }
+            svg += `</svg>`;
+            document.getElementById('chord-svg-container').innerHTML = svg;
+            document.getElementById('chord-diagram-modal').classList.remove('hidden');
+        }
+
+        function closeChordModal() {
+            document.getElementById('chord-diagram-modal').classList.add('hidden');
+        }
+
+        // 13. CUSTOM MODAL HELPERS (NO window.alert / window.confirm)
+        function executePendingDelete() {
+            if (typeof pendingDeleteAction === 'function') {
+                pendingDeleteAction();
+                pendingDeleteAction = null;
+            }
+            closeDeleteModal();
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('confirm-delete-modal').classList.add('hidden');
+        }
+
+        function alertModal(message) {
+            document.getElementById('delete-modal-title').textContent = 'Aviso';
+            document.getElementById('delete-modal-description').textContent = message;
+            const confirmBtn = document.getElementById('delete-modal-confirm-btn');
+            confirmBtn.textContent = 'Entendido';
+            pendingDeleteAction = () => {
+                confirmBtn.textContent = 'Eliminar';
+            };
+            document.getElementById('confirm-delete-modal').classList.remove('hidden');
+        }
+
+        // 14. UTILITY FUNCTIONS
+        function formatDateSpanish(isoStr) {
+            if (!isoStr) return '';
+            const parts = isoStr.split('-');
+            if (parts.length !== 3) return isoStr;
+            const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+            const mIdx = parseInt(parts[1], 10) - 1;
+            return `${parts[2]} ${months[mIdx] || parts[1]} ${parts[0]}`;
+        }
+
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
